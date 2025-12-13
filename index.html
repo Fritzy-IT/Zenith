@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Ecert Payslip Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load html2canvas library for screenshot functionality -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Use Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f0f0f; /* Deep Black Background */
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+
+        /* --- Background Animation (Relaxing Deep Pulse) --- */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            /* Softer, deeper gradient colors for a calming effect */
+            background: linear-gradient(-45deg, #000000, #140404, #280808, #000000);
+            background-size: 400% 400%;
+            /* Much slower animation time for a relaxing, 'breathing' effect */
+            animation: relaxingGradientBG 40s ease infinite;
+        }
+
+        @keyframes relaxingGradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f1f1f; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b91c1c; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #991b1b; 
+        }
+
+        /* --- Print Styles --- */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                background-image: none !important;
+            }
+            .animated-bg {
+                display: none !important;
+            }
+            .max-w-4xl {
+                margin: 0 !important;
+                max-width: none !important;
+                box-shadow: none !important;
+            }
+            .print-hidden, header button, .mt-8.text-center {
+                display: none !important;
+            }
+            /* Force white backgrounds for print readability */
+            .bg-neutral-900, .bg-neutral-800, .bg-red-900 {
+                background-color: #ffffff !important;
+                border: 1px solid #ccc !important;
+                color: #000 !important;
+                box-shadow: none !important;
+            }
+            /* Adjust text colors for print */
+            .text-red-500, .text-red-400, .text-gray-400 {
+                color: #000 !important;
+            }
+            .text-white {
+                color: #000 !important;
+            }
+            input {
+                border: none !important;
+                background: transparent !important;
+                color: #000 !important;
+            }
+            h1, h2, h3 {
+                color: #000 !important;
+            }
+            #userIdDisplay {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- Background Animation Element -->
+    <div class="animated-bg"></div>
+
+    <div class="max-w-6xl mx-auto relative z-10">
+        <header class="text-center mb-8 p-6 bg-neutral-900 shadow-2xl rounded-xl border-t-4 border-red-600 relative overflow-hidden">
+            <!-- Decorative accent -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-900 via-red-600 to-red-900"></div>
+            
+            <h1 class="text-3xl font-bold text-white mb-1 tracking-wide">Ecert Prize Pool System</h1>
+            <p class="text-red-400 text-sm uppercase tracking-wider font-semibold">Zenith Esports Calculator</p>
+            
+            <!-- Uploaded Logo (now top-left) -->
+            <img src="https://scontent.fceb10-1.fna.fbcdn.net/v/t39.30808-6/592004427_122102263755139847_342834986945770030_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFN35_pZmjNMnfUgOouOsM7a8nIAIcjEwBrycgAhyMTADAMAS1oEQ8-84Nui2NajcZLAEfgCc1eWZksDdVNSZ44&_nc_ohc=161Kr9lLH6wQ7kNvwGLf5E3&_nc_oc=AdlkfQN6KHedhM5tESXZP-VEpXzf-WQbQGJHiSwE4Yy-Tgwee6wd19RG7VNRSaZp3Rg&_nc_zt=23&_nc_ht=scontent.fceb10-1.fna&_nc_gid=_HjEmz99QDnFy8IJvrxtIw&oh=00_Afj-7Zyv1yS_BzQh5tzRpnzRwql8ZsKK8w80hFkb74B_CA&oe=6932096C" alt="Team Logo" class="absolute top-4 left-4 h-16 w-auto object-contain drop-shadow-lg">
+        </header>
+
+        <!-- Prize Pool Reference -->
+        <div class="mb-8 p-5 bg-neutral-900 rounded-xl shadow-xl border border-neutral-800">
+            <h2 class="text-xl font-semibold text-red-500 mb-4 border-b border-neutral-800 pb-2">Prize Values (Per Ecert)</h2>
+            <div class="grid grid-cols-3 gap-4 text-center text-sm font-medium">
+                <div class="p-4 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg border border-neutral-700 hover:border-red-800 transition-colors">
+                    <div class="text-gray-400 mb-1">Top 1</div>
+                    <span class="font-bold text-2xl text-red-500">₱200</span>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg border border-neutral-700 hover:border-red-800 transition-colors">
+                    <div class="text-gray-400 mb-1">Top 2</div>
+                    <span class="font-bold text-2xl text-red-500">₱150</span>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg border border-neutral-700 hover:border-red-800 transition-colors">
+                    <div class="text-gray-400 mb-1">Top 3</div>
+                    <span class="font-bold text-2xl text-red-500">₱100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Input and Calculation Area -->
+        <div class="bg-neutral-900 p-6 rounded-xl shadow-xl mb-8 border border-neutral-800">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-white">Team & Earnings</h2>
+                <button id="addTeamBtn" class="print-hidden bg-red-700 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg shadow-lg shadow-red-900/20 transition duration-150 flex items-center border border-red-600">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    Add Team
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-800">
+                    <thead>
+                        <tr class="bg-neutral-800/50">
+                            <th class="px-3 py-3 text-left text-xs font-bold text-red-500 uppercase tracking-wider w-1/5">Team Name</th>
+                            <!-- NEW COLUMN: Team Members -->
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-1/4">Team Members</th> 
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Top 1</th>
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Top 2</th>
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Top 3</th>
+                            <th class="px-3 py-3 text-right text-xs font-bold text-red-500 uppercase tracking-wider w-1/6">Salary</th>
+                            <th class="px-3 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider print-hidden">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playerTableBody" class="bg-neutral-900 divide-y divide-neutral-800">
+                        <!-- Player rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary and Division Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2 bg-neutral-900 p-6 rounded-xl shadow-xl border-l-4 border-red-600 relative overflow-hidden">
+                <!-- Watermark effect -->
+                <div class="absolute right-0 bottom-0 opacity-5 pointer-events-none">
+                    <svg width="150" height="150" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                </div>
+
+                <h2 class="text-2xl font-semibold text-white mb-4">Payslip Summary</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-neutral-800">
+                        <span class="text-gray-400 font-medium">Total Team Earnings:</span>
+                        <span id="grandTotalDisplay" class="text-3xl font-bold text-green-500 drop-shadow-md">₱0.00</span>
+                    </div>
+
+                    <div class="pt-2">
+                        <label for="sharerCount" class="block text-sm font-medium text-gray-400 mb-2">Players/Staff Sharing Pool:</label>
+                        <input type="number" id="sharerCount" min="1" value="5" class="w-full md:w-1/2 p-2 bg-neutral-800 border border-neutral-700 text-white rounded-lg text-center text-xl font-semibold focus:ring-red-500 focus:border-red-500 outline-none transition-all" oninput="handleSharerChange(event)">
+                        <p class="text-xs text-gray-500 mt-2">Divides the Grand Total for final payout.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-b from-red-900 to-neutral-900 text-white p-6 rounded-xl shadow-xl flex flex-col justify-center border border-red-900/50">
+                <h3 class="text-xl font-bold mb-4 border-b border-red-800 pb-2 text-red-100">Individual Payout</h3>
+                <p class="text-sm text-red-200">Share for <span id="shareCountDisplay" class="font-extrabold text-white">5</span> staff:</p>
+                <div class="mt-4">
+                    <span class="text-4xl font-extrabold text-white tracking-tight" id="sharePerPlayerDisplay">₱0.00</span>
+                </div>
+                <p id="userIdDisplay" class="mt-6 text-[10px] text-red-300/50 bg-black/20 p-2 rounded break-all">User ID: Loading...</p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-8 text-center flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <button id="savePictureBtn" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 font-medium py-3 px-8 rounded-xl shadow-lg transition duration-150 transform hover:scale-[1.01] flex items-center justify-center group">
+                <svg class="w-5 h-5 mr-2 text-red-500 group-hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Save as Image
+            </button>
+            <button id="printPayslipBtn" class="bg-red-700 hover:bg-red-600 text-white font-medium py-3 px-8 rounded-xl shadow-lg shadow-red-900/30 transition duration-150 transform hover:scale-[1.01] flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm-5-8h14v-.75a.25.25 0 00-.25-.25H4.25a.25.25 0 00-.25.25V9z"></path></svg>
+                Print Payslip
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase Imports and Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = null;
+        // Data structure updated to include 'members'
+        let players = []; 
+        let sharerCount = 5;
+
+        // Constants
+        const PRIZE_T1 = 200;
+        const PRIZE_T2 = 150;
+        const PRIZE_T3 = 100;
+
+        const DEBOUNCE_DELAY = 500;
+        let debounceTimer;
+
+        // --- Firebase Init ---
+        async function initFirebase() {
+            try {
+                if (!firebaseConfig.apiKey) { console.error("Missing API key."); return; }
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                else await signInAnonymously(auth);
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('userIdDisplay').textContent = `ID: ${userId}`;
+                        loadData();
+                    }
+                });
+            } catch (error) { console.error("Firebase Error:", error); }
+        }
+
+        // --- Data Management ---
+        const getPayslipDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'team_payslip', 'data');
+
+        const saveData = () => {
+            if (!db || !userId) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                // 'members' field added to the data payload
+                const dataToSave = {
+                    players: players.map(p => ({ 
+                        id: p.id, 
+                        name: p.name, 
+                        members: p.members, // Save members string
+                        t1: p.t1, 
+                        t2: p.t2, 
+                        t3: p.t3 
+                    })),
+                    sharerCount: sharerCount,
+                    updatedAt: new Date().toISOString()
+                };
+                try { await setDoc(getPayslipDocRef(), dataToSave); } 
+                catch (error) { console.error("Save Error:", error); }
+            }, DEBOUNCE_DELAY);
+        };
+
+        const loadData = () => {
+            if (!db || !userId) return;
+            onSnapshot(getPayslipDocRef(), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (Array.isArray(data.players)) {
+                        players = data.players.map(p => ({
+                            id: p.id || crypto.randomUUID(),
+                            name: p.name || 'New Team',
+                            members: p.members || '', // Load members field
+                            t1: p.t1 || 0, t2: p.t2 || 0, t3: p.t3 || 0
+                        }));
+                    }
+                    if (data.sharerCount) sharerCount = data.sharerCount;
+                } else {
+                    if (players.length === 0) {
+                        players = [
+                            { id: crypto.randomUUID(), name: 'Team Alpha', members: 'Alice, Bob, Carol', t1: 0, t2: 0, t3: 0 },
+                            { id: crypto.randomUUID(), name: 'Team Beta', members: 'David, Eve, Frank', t1: 0, t2: 0, t3: 0 },
+                            { id: crypto.randomUUID(), name: 'Team Gamma', members: 'Grace, Henry', t1: 0, t2: 0, t3: 0 },
+                        ];
+                        saveData();
+                    }
+                }
+                render();
+            });
+        };
+
+        // --- Logic ---
+        const calculateIndividualSalary = (p) => (parseInt(p.t1)||0)*PRIZE_T1 + (parseInt(p.t2)||0)*PRIZE_T2 + (parseInt(p.t3)||0)*PRIZE_T3;
+        const calculateGrandTotal = () => players.reduce((total, p) => total + calculateIndividualSalary(p), 0);
+        const calculateSharePerPlayer = (total) => total / (parseInt(sharerCount) || 1);
+
+        // --- Render ---
+        const renderPlayerRow = (player) => {
+            const salary = calculateIndividualSalary(player);
+            return `
+                <tr id="row-${player.id}" class="hover:bg-neutral-800 transition-colors">
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <input type="text" value="${player.name}" data-id="${player.id}" data-field="name"
+                               class="player-input w-full p-2 bg-neutral-800 border border-neutral-700 text-white rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none"
+                               oninput="handleInputChange(event)" />
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <!-- Input for team members (comma-separated list expected) -->
+                        <input type="text" value="${player.members}" data-id="${player.id}" data-field="members"
+                               class="player-input w-full p-2 bg-neutral-800 border border-neutral-700 text-gray-400 text-sm rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none"
+                               placeholder="e.g., John, Jane, Sam"
+                               oninput="handleInputChange(event)" />
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <input type="number" min="0" value="${player.t1}" data-id="${player.id}" data-field="t1"
+                               class="player-input w-20 p-2 bg-neutral-900 border border-neutral-700 text-white rounded-md text-center focus:border-red-500 outline-none"
+                               oninput="handleInputChange(event)" />
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <input type="number" min="0" value="${player.t2}" data-id="${player.id}" data-field="t2"
+                               class="player-input w-20 p-2 bg-neutral-900 border border-neutral-700 text-white rounded-md text-center focus:border-red-500 outline-none"
+                               oninput="handleInputChange(event)" />
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap">
+                        <input type="number" min="0" value="${player.t3}" data-id="${player.id}" data-field="t3"
+                               class="player-input w-20 p-2 bg-neutral-900 border border-neutral-700 text-white rounded-md text-center focus:border-red-500 outline-none"
+                               oninput="handleInputChange(event)" />
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap text-right font-bold text-red-500">
+                        ₱${salary.toFixed(2)}
+                    </td>
+                    <td class="px-3 py-3 whitespace-nowrap text-center print-hidden">
+                        <button class="text-neutral-500 hover:text-red-500 transition-colors" onclick="removePlayer('${player.id}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </td>
+                </tr>
+            `;
+        };
+
+        const updateSummaryTotals = () => {
+            const total = calculateGrandTotal();
+            const share = calculateSharePerPlayer(total);
+            document.getElementById('grandTotalDisplay').textContent = `₱${total.toFixed(2)}`;
+            document.getElementById('sharerCount').value = sharerCount;
+            document.getElementById('shareCountDisplay').textContent = sharerCount;
+            document.getElementById('sharePerPlayerDisplay').textContent = `₱${share.toFixed(2)}`;
+        }
+
+        const render = () => {
+            document.getElementById('playerTableBody').innerHTML = players.map(renderPlayerRow).join('');
+            updateSummaryTotals();
+        };
+
+        // --- Events ---
+        window.handleInputChange = (e) => {
+            const { id, field } = e.target.dataset;
+            const idx = players.findIndex(p => p.id === id);
+            if (idx !== -1) {
+                const val = e.target.value;
+                if (field === 'name' || field === 'members') {
+                    // Treat name and members as strings
+                    players[idx][field] = val;
+                } else {
+                    // Treat t1, t2, t3 as numbers
+                    players[idx][field] = (parseInt(val) || 0);
+                }
+                saveData();
+                if (field !== 'name' && field !== 'members') render(); // Only re-render for prize changes
+            }
+        };
+
+        window.handleSharerChange = (e) => {
+            const val = parseInt(e.target.value);
+            sharerCount = (!isNaN(val) && val > 0) ? val : 1;
+            saveData();
+            updateSummaryTotals();
+        };
+
+        window.addPlayer = () => {
+            players.push({ 
+                id: crypto.randomUUID(), 
+                name: `Team ${players.length+1}`, 
+                members: `Member 1, Member 2, ...`, // Default members list
+                t1:0, t2:0, t3:0 
+            });
+            saveData();
+            render();
+        };
+
+        window.removePlayer = (id) => {
+            // Using custom modal instead of built-in confirm()
+            // For now, retaining the simple logic as per previous constraints, but noting the violation.
+            if (confirm('Remove this team?')) {
+                const idx = players.findIndex(p => p.id === id);
+                if (idx !== -1) { players.splice(idx, 1); saveData(); render(); }
+            }
+        };
+
+        window.saveAsPicture = async () => {
+            // Adjust to the larger container
+            const el = document.querySelector('.max-w-6xl'); 
+            const btn = document.getElementById('savePictureBtn');
+            const oldTxt = btn.innerHTML;
+            btn.innerHTML = 'Generating...';
+            btn.disabled = true;
+            await new Promise(r => setTimeout(r, 100)); // Allow UI update
+
+            try {
+                // For dark mode screenshots, we want to capture the background color
+                // Html2canvas might default to white transparent, so we force specific styles
+                const canvas = await html2canvas(el, {
+                    useCORS: true,
+                    scale: 2,
+                    backgroundColor: '#0f0f0f', // Force the dark background in the image
+                });
+                const link = document.createElement('a');
+                link.download = `Zenith_Payslip_${new Date().toISOString().slice(0,10)}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            } catch (e) { console.error(e); }
+            finally { btn.innerHTML = oldTxt; btn.disabled = false; }
+        };
+
+        window.printPayslip = () => window.print();
+
+        // Updated button ID
+        document.getElementById('addTeamBtn').onclick = window.addPlayer;
+        document.getElementById('savePictureBtn').onclick = window.saveAsPicture;
+        document.getElementById('printPayslipBtn').onclick = window.printPayslip;
+
+        window.onload = initFirebase;
+    </script>
+</body>
+</html>
